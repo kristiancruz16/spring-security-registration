@@ -1,7 +1,10 @@
-package com.springboot.springsecurityregistration.security;
+package com.springboot.springsecurityregistration.security.dto;
 
+import com.springboot.springsecurityregistration.security.validators.PasswordMatches;
+import com.springboot.springsecurityregistration.security.validators.ValidEmail;
 import lombok.Getter;
 import lombok.Setter;
+
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -11,7 +14,9 @@ import javax.validation.constraints.NotNull;
  */
 @Getter
 @Setter
-public class User {
+@PasswordMatches
+public class UserDto {
+
     @NotNull
     @NotEmpty
     private String firstName;
@@ -27,5 +32,6 @@ public class User {
 
     @NotNull
     @NotEmpty
+    @ValidEmail
     private String email;
 }
