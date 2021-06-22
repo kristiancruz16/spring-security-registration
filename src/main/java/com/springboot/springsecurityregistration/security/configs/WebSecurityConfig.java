@@ -6,6 +6,8 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+
 
 /**
  * @author KMCruz
@@ -16,9 +18,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final MyUserDetailsService userDetailsService;
+    private final SimpleUrlAuthenticationFailureHandler simpleUrlAuthenticationFailureHandler;
 
-    public WebSecurityConfig(MyUserDetailsService userDetailsService) {
+    public WebSecurityConfig(MyUserDetailsService userDetailsService, SimpleUrlAuthenticationFailureHandler simpleUrlAuthenticationFailureHandler) {
         this.userDetailsService = userDetailsService;
+        this.simpleUrlAuthenticationFailureHandler = simpleUrlAuthenticationFailureHandler;
     }
 
 
@@ -32,7 +36,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http
                 .csrf().disable()
                 .authorizeRequests()
-                .anyRequest().permitAll();
+                .anyRequest().permitAll()
+                .and()
+                .formLogin()
+                .failureHandler(simpleUrlAuthenticationFailureHandler);
     }
 
 

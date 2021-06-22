@@ -30,6 +30,7 @@ public class MyUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
+        boolean enabled = true;
         boolean accountNonExpired = true;
         boolean credentialsNonExpired = true;
         boolean accountNonLocked = true;
@@ -44,9 +45,9 @@ public class MyUserDetailsService implements UserDetailsService {
                     user.getEmail(),
                     user.getPassword(),
                     user.isEnabled(),
-                    accountNonExpired,
-                    credentialsNonExpired,
-                    accountNonLocked,
+                    true,
+                    true,
+                    true,
                     getAuthorities(user.getUserRole()));
         }catch (Exception e) {
             throw new RuntimeException(e);

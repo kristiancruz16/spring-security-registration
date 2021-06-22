@@ -33,28 +33,11 @@ import java.util.function.Consumer;
  * 6/20/2021
  */
 @Controller
-@EnableWebMvc
-public class RegistrationController implements WebMvcConfigurer {
+public class RegistrationController {
 
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSource messages;
-
-    @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/").setViewName("forward:/login");
-        registry.addViewController("/login").setViewName("login");
-        registry.addViewController("/registration.html");
-        registry.addViewController("/badUser.html");
-        registry.addViewController("/emailError.html");
-
-    }
-
-
-    @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/", "/resources/");
-    }
 
     public RegistrationController(UserService userService, ApplicationEventPublisher eventPublisher,
                                   @Qualifier("messageSource") MessageSource messages) {
@@ -113,6 +96,7 @@ public class RegistrationController implements WebMvcConfigurer {
 
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
+        String message = messages.getMessage("message.accountVerified",null,locale);
         return "registrationConfirm";
     }
 }
