@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+</head>
+<body>
+<h1 th:text="${param.message[0]}">Error Message</h1>
+<a th:href="@{/registrationform.html}"
+   th:text="#{label.form.loginSignUp}">signup</a>
+</body>
+</html>

@@ -21,11 +21,12 @@ import java.util.Date;
 @Entity
 public class VerificationToken {
 
-    private static final int EXPIRATION = 60*24;
+    private static final int EXPIRATION = 15;
 
     public VerificationToken(String token, User user) {
         this.token = token;
         this.user = user;
+        this.expiryDate = calculateExpiryDate(EXPIRATION);
     }
 
     @Id
