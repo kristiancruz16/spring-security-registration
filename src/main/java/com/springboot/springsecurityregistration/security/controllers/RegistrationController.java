@@ -97,6 +97,17 @@ public class RegistrationController {
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
         String message = messages.getMessage("message.accountVerified",null,locale);
-        return "registrationConfirm";
+        model.addAttribute("message",message);
+//        return "registrationConfirm";
+        return "redirect:/login?message=" + message;
+    }
+
+    @GetMapping("/login")
+    public String login(HttpServletRequest request,  Model model, @RequestParam("message")  Optional<String> messageKey, @RequestParam("error" )  Optional<String> error) {
+        Locale locale = request.getLocale();
+        model.addAttribute("lang", locale.getLanguage());
+        messageKey.ifPresent(key ->model.addAttribute("message",key));
+        error.ifPresent( e ->  model.addAttribute("error", e));
+        return "login";
     }
 }
