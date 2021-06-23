@@ -6,8 +6,10 @@ import com.springboot.springsecurityregistration.security.services.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
+import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 
@@ -18,13 +20,10 @@ import java.util.UUID;
  * 6/21/2021
  */
 @Component
-public class RegistrationListener implements ApplicationListener<OnRegistrationCompleteEvent> {
-
+public class RegistrationListener {
 
     private final UserService userService;
-
     private final MessageSource messages;
-    
     private final JavaMailSender mailSender;
 
     public RegistrationListener(UserService userService, @Qualifier("messageSource") MessageSource messages, JavaMailSender mailSender) {
@@ -33,8 +32,9 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         this.mailSender = mailSender;
     }
 
-    @Override
-    public void onApplicationEvent(OnRegistrationCompleteEvent event) {
+    @Async
+    @EventListener
+    public void handleOnRegistrationCompleteEvent(OnRegistrationCompleteEvent event){
         User user = event.getUser();
         String token = UUID.randomUUID().toString();
         userService.createVerificationToken(user, token);
@@ -50,7 +50,5 @@ public class RegistrationListener implements ApplicationListener<OnRegistrationC
         email.setSubject(subject);
         email.setText(message + "\r\n" + "http://localhost:8080"+ confirmationUrl);
         mailSender.send(email);
-
     }
-
 }

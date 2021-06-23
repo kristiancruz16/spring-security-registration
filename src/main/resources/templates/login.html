@@ -31,7 +31,7 @@
     </head>
 </head>
 <body>
-<div th:if="${message!= null}" class="alert alert-info" th:text="${message}">message</div>
+<div th:if="${message!= null}" class="alert alert-info" th:text="#{message.accountVerified}">message</div>
 
 
 <div th:if="${error != null}" class="alert alert-danger" th:utext="${session[SPRING_SECURITY_LAST_EXCEPTION]}">error</div>
