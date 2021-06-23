@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title th:text="#{label.pages.home.title}">home</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=US-ASCII"/>
+    <title th:utext="#{label.pages.home.title}">home</title>
 </head>
 <body>
-<div >
-    <h1 th:text="#{message.registrationSuccess}">success</h1>
-    <a th:href="@{/login}" th:text="#{label.login}">login</a>
+<div class="container">
+    <h1 class="alert alert-success" th:utext="#{message.registrationSuccess}">success</h1>
+    <a th:href="@{/login}" th:utext="#{label.login}">login</a>
 </div>
 </body>
 </html>

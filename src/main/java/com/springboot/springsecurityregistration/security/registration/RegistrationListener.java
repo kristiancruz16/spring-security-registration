@@ -51,4 +51,9 @@ public class RegistrationListener {
         email.setText(message + "\r\n" + "http://localhost:8080"+ confirmationUrl);
         mailSender.send(email);
     }
+
+    @EventListener
+    public void handleSampleEvent(SampleEvent event){
+        System.out.println(event.getMessage());
+    }
 }

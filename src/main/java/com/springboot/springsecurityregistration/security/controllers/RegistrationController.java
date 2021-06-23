@@ -4,6 +4,7 @@ import com.springboot.springsecurityregistration.security.domain.User;
 import com.springboot.springsecurityregistration.security.domain.VerificationToken;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
 import com.springboot.springsecurityregistration.security.registration.OnRegistrationCompleteEvent;
+import com.springboot.springsecurityregistration.security.registration.SampleEvent;
 import com.springboot.springsecurityregistration.security.services.UserService;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,15 +19,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.config.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * @author KMCruz
@@ -50,7 +48,7 @@ public class RegistrationController {
     public String showRegistrationForm(WebRequest request, Model model) {
         UserDto userDto = new UserDto();
         model.addAttribute("user", userDto);
-        return "registrationform";
+        return "registration";
     }
 
     @PostMapping("/user/registration")
@@ -63,8 +61,10 @@ public class RegistrationController {
         try{
             User registered = userService.registerNewUserAccount(userDto);
             String appUrl = request.getContextPath();
+            eventPublisher.publishEvent(new SampleEvent("Hello Sample Application Event"));
             eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered,
                     request.getLocale(), appUrl));
+
         }catch (UserAlreadyExistException uaeEx){
             errors.rejectValue("email","duplicate","email already exists");
         } catch (RuntimeException ex) {
@@ -74,32 +74,29 @@ public class RegistrationController {
 
     }
     @GetMapping("/registrationConfirm")
-    public String confirmRegistration
-            (HttpServletRequest request, Model model, @RequestParam("token") String token) {
-        System.out.println("Confirmed Registration");
+    public ModelAndView confirmRegistration(HttpServletRequest request, ModelMap model, @RequestParam("token") String token) {
         Locale locale = request.getLocale();
 
         VerificationToken verificationToken = userService.getVerificationToken(token);
         if (verificationToken == null) {
             String message = messages.getMessage("auth.message.invalidToken", null, locale);
-            model.addAttribute("message", message);
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+            model.addAttribute("message",message);
+            return new ModelAndView("redirect:/badUser",model);
         }
 
         User user = verificationToken.getUser();
         Calendar cal = Calendar.getInstance();
         if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
-            String messageValue = messages.getMessage("auth.message.expired", null, locale);
-            model.addAttribute("message", messageValue);
-            return "redirect:/badUser.html?lang=" + locale.getLanguage();
+            String message = messages.getMessage("auth.message.expired", null, locale);
+            model.addAttribute("message", message);
+            return new ModelAndView("redirect:/badUser",model);
         }
 
         user.setEnabled(true);
         userService.saveRegisteredUser(user);
         String message = messages.getMessage("message.accountVerified",null,locale);
         model.addAttribute("message",message);
-//        return "registrationConfirm";
-        return "redirect:/login?message=" + message;
+        return new ModelAndView("redirect:/login",model); /*"redirect:/login?message=" + message;*/
     }
 
     @GetMapping("/login")
@@ -107,7 +104,18 @@ public class RegistrationController {
         Locale locale = request.getLocale();
         model.addAttribute("lang", locale.getLanguage());
         messageKey.ifPresent(key ->model.addAttribute("message",key));
-        error.ifPresent( e ->  model.addAttribute("error", e));
+        error.ifPresent( e -> model.addAttribute("error", e));
         return "login";
+    }
+
+    @GetMapping("/badUser")
+    public String handlerBadUser(HttpServletRequest request, ModelMap model, @RequestParam Optional<String> message,
+                                 @RequestParam Optional<String> expired, @RequestParam Optional<String> token) {
+
+        message.ifPresent( key -> model.addAttribute("message", key));
+        expired.ifPresent( e -> model.addAttribute("expired", e));
+        token.ifPresent( t -> model.addAttribute("token", t));
+
+        return "badUser";
     }
 }
