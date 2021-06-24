@@ -46,20 +46,24 @@
         <form name='f' action="login" method='POST' onsubmit="return validate();">
             <span id="welcometext">&nbsp;</span>
 
-            <br /><br />
-            <label class="col-sm-4" th:utext="#{label.form.loginEmail}">Email</label>
-            <span class="col-sm-8"><input class="form-control" type='text' name='username' value=''/></span>
 
-            <br/><br/>
-            <label class="col-sm-4" th:utext="#{label.form.loginPass}">password</label>
-            <span class="col-sm-8"><input class="form-control" type='password' name='password' /></span>
 
+            <!--<label class="sr-only" for="username" >Email</label>-->
+            <input id="username" class="form-control" type='text' name='username' value='' th:placeholder="#{label.form.loginEmail}"/>
+
+
+            <br/><!--<br/>-->
+            <input class="form-control" type='password' name='password' th:placeholder="#{label.form.loginPass}"/>
            <!-- <br/><br/>
             <label class="col-sm-4" th:utext="#{label.form.login2fa}">Google Authenticator Verification Code</label>
             <span class="col-sm-8"><input class="form-control" type='text' name='code' /></span>-->
+            <br/>
+            <input class="btn btn-primary  btn-lg  btn-block " name="submit" type="submit" th:value="#{label.form.submit}" />
+            <br/>
+            <p style="text-align: center"><a>Forget Password?</a></p>
+            <input class="btn center-block btn-success" name="signup" type="submit" th:value="#{label.form.loginSignUp}"
+                    th:width="400"/>
 
-            <br/><br/>
-            <input class="btn btn-primary" name="submit" type="submit" th:value="#{label.form.submit}" />
 
         </form>
         <!--<br/> Current Locale :  <span th:utext="${#locale}"></span><br/><br/>
