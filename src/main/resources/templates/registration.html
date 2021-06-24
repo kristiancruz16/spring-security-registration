@@ -6,6 +6,9 @@
     <title th:text="#{label.form.title}">form</title>
 </head>
 <body>
+
+<div th:if="${message != null}" class="alert alert-danger"  th:text="${message}">error</div>
+
 <div class="container">
     <div >
         <h1 th:utext="#{label.form.title}">form</h1>

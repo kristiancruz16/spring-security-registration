@@ -7,6 +7,9 @@ import com.springboot.springsecurityregistration.security.registration.OnRegistr
 import com.springboot.springsecurityregistration.security.registration.SampleEvent;
 import com.springboot.springsecurityregistration.security.services.UserService;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
+import org.dom4j.rule.Mode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
@@ -19,8 +22,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.ViewResolver;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Locale;
@@ -32,6 +37,8 @@ import java.util.Optional;
  */
 @Controller
 public class RegistrationController {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
@@ -52,25 +59,28 @@ public class RegistrationController {
     }
 
     @PostMapping("/user/registration")
-    public String registerUserAccount (HttpServletRequest request, @Valid UserDto userDto,
+    public ModelAndView registerUserAccount (HttpServletRequest request, @Valid UserDto userDto,
                                        Errors errors) {
-        if(errors.hasErrors()) {
-            return "emailError";
-        }
-
+        LOGGER.debug("Registering User Account: ", userDto);
+        User registered = new User();
         try{
-            User registered = userService.registerNewUserAccount(userDto);
+            registered = userService.registerNewUserAccount(userDto);
             String appUrl = request.getContextPath();
-            eventPublisher.publishEvent(new SampleEvent("Hello Sample Application Event"));
             eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registered,
                     request.getLocale(), appUrl));
 
         }catch (UserAlreadyExistException uaeEx){
-            errors.rejectValue("email","duplicate","email already exists");
+            LOGGER.info("User Already exists");
+            ModelAndView mav = new ModelAndView("registration","user",userDto);
+            String message = messages.getMessage("message.regError",null,request.getLocale());
+            mav.addObject("message",message);
+            return mav;
         } catch (RuntimeException ex) {
-            return "emailError";
+            return new ModelAndView("emailError","user",userDto);
         }
-        return "successRegister";
+        VerificationToken token = userService.getVerificationTokenByUser(registered);
+        LOGGER.info(token.getToken());
+        return new ModelAndView("successRegister","token",token.getToken());
 
     }
     @GetMapping("/registrationConfirm")
@@ -88,6 +98,8 @@ public class RegistrationController {
         Calendar cal = Calendar.getInstance();
         if ((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
             String message = messages.getMessage("auth.message.expired", null, locale);
+            model.addAttribute("expired",true);
+            model.addAttribute("token",token);
             model.addAttribute("message", message);
             return new ModelAndView("redirect:/badUser",model);
         }
@@ -109,13 +121,25 @@ public class RegistrationController {
     }
 
     @GetMapping("/badUser")
-    public String handlerBadUser(HttpServletRequest request, ModelMap model, @RequestParam Optional<String> message,
+    public ModelAndView handlerBadUser(HttpServletRequest request, ModelMap model, @RequestParam Optional<String> message,
                                  @RequestParam Optional<String> expired, @RequestParam Optional<String> token) {
 
         message.ifPresent( key -> model.addAttribute("message", key));
         expired.ifPresent( e -> model.addAttribute("expired", e));
         token.ifPresent( t -> model.addAttribute("token", t));
 
-        return "badUser";
+        return new ModelAndView("badUser",model);
     }
+
+    @GetMapping("/user/resendRegistrationToken")
+    public ModelAndView resendRegistrationToken(HttpServletRequest request, ModelMap model, @RequestParam Optional<String> token){
+        User registeredUser = userService.getUser(token.get());
+        String appUrl = request.getContextPath();
+
+        eventPublisher.publishEvent(new OnRegistrationCompleteEvent(registeredUser,request.getLocale(),appUrl));
+        LOGGER.debug("User: ",registeredUser);
+        model.addAttribute(token);
+        return new ModelAndView("successRegister",model);
+    }
+
 }

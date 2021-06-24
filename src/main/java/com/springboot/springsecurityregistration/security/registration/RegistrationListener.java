@@ -34,7 +34,7 @@ public class RegistrationListener {
 
     @Async
     @EventListener
-    public void handleOnRegistrationCompleteEvent(OnRegistrationCompleteEvent event){
+    public void handlerOnRegistrationCompleteEvent(OnRegistrationCompleteEvent event){
         User user = event.getUser();
         String token = UUID.randomUUID().toString();
         userService.createVerificationToken(user, token);

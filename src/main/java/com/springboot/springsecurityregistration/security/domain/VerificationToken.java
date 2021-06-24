@@ -23,12 +23,6 @@ public class VerificationToken {
 
     private static final int EXPIRATION = 15;
 
-    public VerificationToken(String token, User user) {
-        this.token = token;
-        this.user = user;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -49,5 +43,11 @@ public class VerificationToken {
         return new Date(cal.getTime().getTime());
     }
 
+    public VerificationToken createOrUpdateVerificationToken(User user, String token){
+        this.token = token;
+        this.user = user;
+        this.expiryDate = calculateExpiryDate(EXPIRATION);
+        return this;
+    }
 
 }

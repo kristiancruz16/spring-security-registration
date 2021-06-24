@@ -8,7 +8,10 @@
 <body>
 <div class="container">
     <h1 class="alert alert-success" th:utext="#{message.registrationSuccess}">success</h1>
-    <a th:href="@{/login}" th:utext="#{label.login}">login</a>
+    <a class="btn btn-default" th:href="@{/login}" th:utext="#{label.login}">login</a>
+    <br/>
+    <a th:href="@{'http://localhost:8080/user/resendRegistrationToken?token='+${token}}"
+       th:utext="#{label.form.resendRegistrationToken}">resend</a>
 </div>
 </body>
 </html>
