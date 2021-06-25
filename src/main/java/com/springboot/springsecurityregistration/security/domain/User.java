@@ -36,6 +36,10 @@ public class User {
     private UserRole userRole;
 
     private boolean enabled;
+
+    @OneToOne(mappedBy = "user")
+    private PasswordResetToken resetToken;
+
     @OneToOne(mappedBy = "user")
     private VerificationToken token;
 

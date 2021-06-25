@@ -1,6 +1,6 @@
 package com.springboot.springsecurityregistration.security.domain;
 
-import lombok.EqualsAndHashCode;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,43 +12,37 @@ import java.util.Date;
 
 /**
  * @author KMCruz
- * 6/21/2021
+ * 6/25/2021
  */
-@Getter
-@Setter
-@EqualsAndHashCode
+@Data
 @NoArgsConstructor
 @Entity
-public class VerificationToken {
+public class PasswordResetToken {
 
     private static final int EXPIRATION = 15;
+
+    public PasswordResetToken(User user,String resetToken) {
+        this.resetToken = resetToken;
+        this.user = user;
+        this.expiryDate = CalculateExpiryDate(EXPIRATION);
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private String token;
+    private String resetToken;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id",referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "user_id", referencedColumnName = "id",nullable = false)
     private User user;
-
 
     private Date expiryDate;
 
-
-    private Date calculateExpiryDate(int expiryTimeInMinutes) {
+    private Date CalculateExpiryDate(int expiryTimeInMinutes) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Timestamp(cal.getTime().getTime()));
         cal.add(Calendar.MINUTE, expiryTimeInMinutes);
         return new Date(cal.getTime().getTime());
     }
-
-    public VerificationToken createOrUpdateVerificationToken(User user, String token){
-        this.token = token;
-        this.user = user;
-        this.expiryDate = calculateExpiryDate(EXPIRATION);
-        return this;
-    }
-
 }

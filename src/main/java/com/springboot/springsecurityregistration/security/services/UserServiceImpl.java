@@ -1,11 +1,14 @@
 package com.springboot.springsecurityregistration.security.services;
 
+import com.springboot.springsecurityregistration.security.domain.PasswordResetToken;
 import com.springboot.springsecurityregistration.security.domain.User;
 import com.springboot.springsecurityregistration.security.domain.VerificationToken;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
+import com.springboot.springsecurityregistration.security.repositories.PasswordResetTokenRepository;
 import com.springboot.springsecurityregistration.security.repositories.UserRepository;
 import com.springboot.springsecurityregistration.security.repositories.VerificationTokenRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -20,10 +23,15 @@ import static com.springboot.springsecurityregistration.security.domain.UserRole
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final VerificationTokenRepository tokenRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordResetTokenRepository resetTokenRepository;
 
-    public UserServiceImpl(UserRepository userRepository, VerificationTokenRepository tokenRepository) {
+    public UserServiceImpl(UserRepository userRepository, VerificationTokenRepository tokenRepository,
+                           PasswordEncoder passwordEncoder, PasswordResetTokenRepository resetTokenRepository) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.resetTokenRepository = resetTokenRepository;
     }
 
     @Override
@@ -35,7 +43,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setFirstName(userDto.getFirstName());
         user.setLastName(userDto.getLastName());
-        user.setPassword(userDto.getPassword());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
         user.setEmail(userDto.getEmail());
         user.setUserRole(USER);
 
@@ -79,5 +87,12 @@ public class UserServiceImpl implements UserService {
     @Override
     public VerificationToken getVerificationTokenByUser(User user) {
         return tokenRepository.findByUser(user);
+    }
+
+    @Override
+    public void createPasswordResetToken(User user, String token) {
+        PasswordResetToken resetToken = new PasswordResetToken(user,token);
+        resetTokenRepository.save(resetToken);
+
     }
 }
