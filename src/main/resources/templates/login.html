@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <head>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"/>
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
         <title th:utext="#{label.pages.home.title}">Title</title>
         <script th:inline="javascript">
             function validate() {
@@ -27,17 +30,45 @@
         <style type="text/css">
             .wrapper{width:500px;margin-left:auto;margin-right:auto}
             label{padding-left:0 !important}
+
+            .modal {
+                text-align: center;
+            }
+
+            @media screen and (min-width: 768px) {
+                .modal:before {
+                    display: inline-block;
+                    vertical-align: middle;
+                    content: " ";
+                    height: 100%;
+                }
+            }
+
+            .modal-dialog {
+                display: inline-block;
+                text-align: left;
+                vertical-align: middle;
+            }
+            .container {
+                align-items: center;
+                display: flex;
+                justify-content: center;
+                height: 100%;
+                width: 100%;
+            }
         </style>
-    </head>
 </head>
 <body>
 <div th:if="${message!= null}" class="alert alert-info" th:text="#{message.accountVerified}">message</div>
 
+<div th:if="${error!= null} and ${session[SPRING_SECURITY_LAST_EXCEPTION]!=null}" class="alert alert-danger"
+     th:text="${session[SPRING_SECURITY_LAST_EXCEPTION]}">error</div>
+<div th:if="${error!= null}" class="alert alert-danger"
+     th:text="${error}"></div>
 
-<div th:if="${error != null}" class="alert alert-danger" th:utext="${session[SPRING_SECURITY_LAST_EXCEPTION]}">error</div>
 
 <div class="container">
-    <div class="row wrapper">
+    <div class="content">
         <h1 th:utext="#{label.form.loginTitle}">Header</h1>
         <a href="?lang=en" th:utext="#{label.form.loginEnglish}">login</a> |
         <a href="?lang=es_ES" th:utext="#{label.form.loginSpanish}">login</a>
@@ -45,17 +76,50 @@
 
         <form name='f' action="login" method='POST' onsubmit="return validate();">
             <span id="welcometext">&nbsp;</span>
-            <input id="username" class="form-control" type='text' name='username' value='' th:placeholder="#{label.form.loginEmail}"/>
+            <input id="username" class="form-control input-lg" type='text' name='username' value='' th:placeholder="#{label.form.loginEmail}"/>
             <br/>
-            <input class="form-control" type='password' name='password' th:placeholder="#{label.form.loginPass}"/>
+            <input class="form-control input-lg" type='password' name='password' th:placeholder="#{label.form.loginPass}"/>
             <br/>
             <input class="btn btn-primary  btn-lg  btn-block " name="submit" type="submit" th:value="#{label.form.login}" />
             <br/>
         </form>
-        <p style="text-align: center"><a>Forget Password?</a></p>
+        <p style="text-align: center"><a data-toggle="modal" href="#resetPassword"  data-backdrop="true">Forget Password?</a></p>
+
         <a class="btn center-block btn-success" name="signup"  th:text="#{label.form.loginSignUp}"
         th:href="@{/user/registration}" style="width: 400px">Sign Up</a>
     </div>
+    <div id="resetPassword" class="modal fade" role="dialog">
+        <div class="modal-dialog" role="form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h3 class="modal-title" th:utext="#{message.resetYourPassword}">Modal Header</h3>
+                </div>
+                <div class="modal-body">
+
+
+                            Please enter your email address to receive a password reset link.
+                            <span class="col-sm-offset-12">
+                            <input class="form-control input-lg" id="email" name="email" type="email" value="" required="required"
+                                                      placeholder="Email"/>
+                            </span>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-primary" type="button" th:utext="#{message.sendPasswordLink}"
+                   data-dismiss="modal" onclick="sendPasswordLink()">send</a>
+                    <script th:inline="javascript">
+                        function sendPasswordLink(){
+                            var email = document.getElementById("email").value;
+                            $.get("/login/resetPassword?email="+email);
+                        }
+
+                    </script>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
 </body>
 </html>

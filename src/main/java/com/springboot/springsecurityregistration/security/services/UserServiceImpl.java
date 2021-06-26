@@ -5,6 +5,7 @@ import com.springboot.springsecurityregistration.security.domain.User;
 import com.springboot.springsecurityregistration.security.domain.VerificationToken;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
+import com.springboot.springsecurityregistration.security.exceptions.UserNotFoundException;
 import com.springboot.springsecurityregistration.security.repositories.PasswordResetTokenRepository;
 import com.springboot.springsecurityregistration.security.repositories.UserRepository;
 import com.springboot.springsecurityregistration.security.repositories.VerificationTokenRepository;
@@ -50,7 +51,6 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(user);
     }
 
-
     public boolean isEmailExists(String email){
         return userRepository.findByEmail(email) != null;
     }
@@ -93,6 +93,15 @@ public class UserServiceImpl implements UserService {
     public void createPasswordResetToken(User user, String token) {
         PasswordResetToken resetToken = new PasswordResetToken(user,token);
         resetTokenRepository.save(resetToken);
-
     }
+
+    @Override
+    public User findUserByEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        if(user==null) {
+            throw new UserNotFoundException(email+" does not exists.");
+        }
+        return user;
+    }
+
 }

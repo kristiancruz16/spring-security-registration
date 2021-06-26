@@ -52,8 +52,4 @@ public class RegistrationListener {
         mailSender.send(email);
     }
 
-    @EventListener
-    public void handleSampleEvent(SampleEvent event){
-        System.out.println(event.getMessage());
-    }
 }

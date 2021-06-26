@@ -3,11 +3,11 @@ package com.springboot.springsecurityregistration.security.controllers;
 import com.springboot.springsecurityregistration.security.domain.User;
 import com.springboot.springsecurityregistration.security.domain.VerificationToken;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
+import com.springboot.springsecurityregistration.security.exceptions.UserNotFoundException;
 import com.springboot.springsecurityregistration.security.registration.OnRegistrationCompleteEvent;
-import com.springboot.springsecurityregistration.security.registration.SampleEvent;
+import com.springboot.springsecurityregistration.security.services.CreatePasswordResetLink;
 import com.springboot.springsecurityregistration.security.services.UserService;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
-import org.dom4j.rule.Mode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,10 +22,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.ViewResolver;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Calendar;
 import java.util.Locale;
@@ -43,12 +41,14 @@ public class RegistrationController {
     private final UserService userService;
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSource messages;
+    private final CreatePasswordResetLink resetLink;
 
     public RegistrationController(UserService userService, ApplicationEventPublisher eventPublisher,
-                                  @Qualifier("messageSource") MessageSource messages) {
+                                  @Qualifier("messageSource") MessageSource messages, CreatePasswordResetLink resetLink) {
         this.userService = userService;
         this.eventPublisher = eventPublisher;
         this.messages = messages;
+        this.resetLink = resetLink;
     }
 
     @GetMapping("/user/registration")
@@ -62,7 +62,7 @@ public class RegistrationController {
     public ModelAndView registerUserAccount (HttpServletRequest request, @Valid UserDto userDto,
                                        Errors errors) {
         LOGGER.debug("Registering User Account: ", userDto);
-        User registered = new User();
+        User registered;
         try{
             registered = userService.registerNewUserAccount(userDto);
             String appUrl = request.getContextPath();
@@ -140,6 +140,20 @@ public class RegistrationController {
         LOGGER.debug("User: ",registeredUser);
         model.addAttribute(token);
         return new ModelAndView("successRegister",model);
+    }
+
+    @GetMapping("login/resetPassword")
+    public String createResetPasswordLink(HttpServletRequest request,@RequestParam String email){
+        try {
+            User user = userService.findUserByEmail(email);
+            Locale locale = request.getLocale();
+            String appUrl = request.getContextPath();
+            resetLink.mail(user, locale, appUrl);
+        }catch (UserNotFoundException notFoundException){
+            String error = messages.getMessage("message.userNotFound",null,request.getLocale());
+            return "redirect:/login?error=" + error;
+        }
+        return "/login";
     }
 
 }
