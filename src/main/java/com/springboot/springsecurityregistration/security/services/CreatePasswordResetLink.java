@@ -36,7 +36,7 @@ public class CreatePasswordResetLink {
         String recipientAddress = user.getEmail();
         String subject = "Reset Password";
         String confirmationUrl
-                = appUrl + "/login/resetPassword?token=" + token;
+                = appUrl + "/login/changePassword?token=" + token;
         String message = messages.getMessage("message.resetPassword", null, locale);
 
         SimpleMailMessage email = new SimpleMailMessage();

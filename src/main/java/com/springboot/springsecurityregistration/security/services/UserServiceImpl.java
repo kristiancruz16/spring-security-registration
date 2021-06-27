@@ -13,7 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
-
 import static com.springboot.springsecurityregistration.security.domain.UserRole.*;
 
 /**
@@ -56,7 +55,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User getUser(String verificationToken) {
+    public User getUserByVerificationToken(String verificationToken) {
         User user = tokenRepository.findByToken(verificationToken).getUser();
         return user;
     }
@@ -93,6 +92,11 @@ public class UserServiceImpl implements UserService {
     public void createPasswordResetToken(User user, String token) {
         PasswordResetToken resetToken = new PasswordResetToken(user,token);
         resetTokenRepository.save(resetToken);
+    }
+
+    @Override
+    public PasswordResetToken getPasswordResetTokenByResetToken(String resetToken) {
+        return resetTokenRepository.findByResetToken(resetToken);
     }
 
     @Override

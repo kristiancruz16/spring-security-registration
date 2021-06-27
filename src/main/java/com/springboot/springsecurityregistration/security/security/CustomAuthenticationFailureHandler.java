@@ -36,19 +36,20 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
                                         AuthenticationException exception) throws IOException, ServletException {
-        setDefaultFailureUrl("/login?error=true");
-        super.onAuthenticationFailure(request, response, exception);
+//        setDefaultFailureUrl("/login?error=true");
+//        super.onAuthenticationFailure(request, response, exception);
 
         Locale locale = localeResolver.resolveLocale(request);
 
-        String errorMessage = messages.getMessage("message.badCredentials", null, locale);
+        String error = messages.getMessage("message.badCredentials", null, locale);
 
         if (exception.getMessage().equalsIgnoreCase("User is disabled")) {
-            errorMessage = messages.getMessage("auth.message.disabled", null, locale);
+            error = messages.getMessage("auth.message.disabled", null, locale);
         } else if (exception.getMessage().equalsIgnoreCase("User account has expired")) {
-            errorMessage = messages.getMessage("auth.message.expired", null, locale);
+            error = messages.getMessage("auth.message.expired", null, locale);
         }
-
-        request.getSession().setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, errorMessage);
+        setDefaultFailureUrl("/login?error="+error);
+        super.onAuthenticationFailure(request, response, exception);
+//        request.getSession().setAttribute(WebAttributes.AUTHENTICATION_EXCEPTION, error);
     }
 }

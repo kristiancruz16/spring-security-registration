@@ -1,9 +1,14 @@
 package com.springboot.springsecurityregistration.security.services;
 
+import com.springboot.springsecurityregistration.security.domain.PasswordResetToken;
 import com.springboot.springsecurityregistration.security.domain.User;
 import com.springboot.springsecurityregistration.security.domain.VerificationToken;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
+import com.springboot.springsecurityregistration.security.exceptions.UserNotFoundException;
+
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * @author KMCruz
@@ -15,7 +20,7 @@ public interface UserService {
 
     boolean isEmailExists(String email);
 
-    User getUser(String verificationToken);
+    User getUserByVerificationToken(String verificationToken);
 
     void saveRegisteredUser(User user);
 
@@ -27,5 +32,7 @@ public interface UserService {
 
     void createPasswordResetToken(User user, String token);
 
-    User findUserByEmail(String email);
+    PasswordResetToken getPasswordResetTokenByResetToken(String resetToken);
+
+    User findUserByEmail(String email) throws UserNotFoundException;
 }
