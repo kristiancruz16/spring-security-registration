@@ -3,22 +3,24 @@ package com.springboot.springsecurityregistration.security.controllers;
 import com.springboot.springsecurityregistration.security.domain.PasswordResetToken;
 import com.springboot.springsecurityregistration.security.domain.User;
 import com.springboot.springsecurityregistration.security.domain.VerificationToken;
+import com.springboot.springsecurityregistration.security.dto.PasswordDto;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
 import com.springboot.springsecurityregistration.security.exceptions.UserNotFoundException;
 import com.springboot.springsecurityregistration.security.registration.OnRegistrationCompleteEvent;
 import com.springboot.springsecurityregistration.security.services.CreatePasswordResetLink;
 import com.springboot.springsecurityregistration.security.services.UserService;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
-import org.apache.tomcat.jni.Local;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.MessageSource;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.Errors;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,10 +29,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author KMCruz
@@ -45,13 +44,16 @@ public class RegistrationController {
     private final ApplicationEventPublisher eventPublisher;
     private final MessageSource messages;
     private final CreatePasswordResetLink resetLink;
+    private final PasswordEncoder passwordEncoder;
 
     public RegistrationController(UserService userService, ApplicationEventPublisher eventPublisher,
-                                  @Qualifier("messageSource") MessageSource messages, CreatePasswordResetLink resetLink) {
+                                  @Qualifier("messageSource") MessageSource messages, CreatePasswordResetLink resetLink,
+                                  PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.eventPublisher = eventPublisher;
         this.messages = messages;
         this.resetLink = resetLink;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/user/registration")
@@ -65,6 +67,16 @@ public class RegistrationController {
     public ModelAndView registerUserAccount (HttpServletRequest request, @Valid UserDto userDto,
                                        Errors errors) {
         LOGGER.debug("Registering User Account: ", userDto);
+
+        if(errors.hasErrors()){
+            ModelAndView mav = new ModelAndView("registration");
+            List<ObjectError> listObjectError = errors.getAllErrors();
+            List<String> errorList = new ArrayList<>();
+            listObjectError.stream()
+                    .forEach(e -> errorList.add(e.getDefaultMessage()));
+            mav.addObject("message",errorList);
+            return mav;
+        }
         User registered;
         try{
             registered = userService.registerNewUserAccount(userDto);
@@ -108,6 +120,7 @@ public class RegistrationController {
         }
 
         user.setEnabled(true);
+        userService.deleteVerificationToken(verificationToken);
         userService.saveRegisteredUser(user);
         String message = messages.getMessage("message.accountVerified",null,locale);
         model.addAttribute("message",message);
@@ -175,7 +188,7 @@ public class RegistrationController {
         PasswordResetToken passwordResetToken = userService.getPasswordResetTokenByResetToken(token);
         Locale locale = request.getLocale();
 
-        if(passwordResetToken.equals(null)){
+        if(passwordResetToken==null){
             String error = messages.getMessage("auth.message.invalidToken",null,locale);
             model.addAttribute("error",error);
             return new ModelAndView("redirect:/login",model);
@@ -192,8 +205,25 @@ public class RegistrationController {
             return new ModelAndView("redirect:/login",model);
         }
 
-        model.addAttribute("user",user);
+        model.addAttribute("token",token);
         return new ModelAndView("/changePassword",model);
     }
 
+    @PostMapping("/login/changePassword")
+    public ModelAndView processChangePassword(HttpServletRequest request,PasswordDto passwordDto,
+                                              ModelMap model, @RequestParam String token){
+        PasswordResetToken resetToken = userService.getPasswordResetTokenByResetToken(token);
+        Locale locale = request.getLocale();
+        User user = resetToken.getUser();
+        if(!passwordDto.getPassword().equals(passwordDto.getMatchingPassword())) {
+            String error = messages.getMessage("PasswordMatches.user",null,locale);
+            model.addAttribute("error",error);
+            return new ModelAndView("changePassword",model);
+        }
+        user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
+        userService.saveRegisteredUser(user);
+        String message = messages.getMessage("message.updatePasswordSuc",null,locale);
+        model.addAttribute("message",message);
+        return new ModelAndView("redirect:/login",model);
+    }
 }

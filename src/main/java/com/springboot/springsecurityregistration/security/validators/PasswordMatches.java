@@ -1,7 +1,9 @@
 package com.springboot.springsecurityregistration.security.validators;
 
 import com.springboot.springsecurityregistration.security.validators.PasswordMatchesValidator;
+import org.springframework.context.MessageSource;
 
+import javax.mail.Message;
 import javax.validation.Constraint;
 import javax.validation.Payload;
 import java.lang.annotation.*;

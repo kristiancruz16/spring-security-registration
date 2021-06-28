@@ -35,4 +35,6 @@ public interface UserService {
     PasswordResetToken getPasswordResetTokenByResetToken(String resetToken);
 
     User findUserByEmail(String email) throws UserNotFoundException;
+
+    void deleteVerificationToken(VerificationToken vToken);
 }

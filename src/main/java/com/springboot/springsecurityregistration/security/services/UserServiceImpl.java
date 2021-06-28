@@ -90,7 +90,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void createPasswordResetToken(User user, String token) {
-        PasswordResetToken resetToken = new PasswordResetToken(user,token);
+        PasswordResetToken resetToken = new PasswordResetToken();
+        if (user.getResetToken()!=null){
+            resetToken = user.getResetToken();
+            resetToken=resetToken.createOrUpdateVerificationToken(user, token);
+        }
+        else {
+            resetToken = resetToken.createOrUpdateVerificationToken(user,token);
+        }
         resetTokenRepository.save(resetToken);
     }
 
@@ -106,6 +113,11 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException(email+" does not exists.");
         }
         return user;
+    }
+
+    @Override
+    public void deleteVerificationToken(VerificationToken vToken) {
+        tokenRepository.delete(vToken);
     }
 
 }

@@ -4,7 +4,9 @@ import com.springboot.springsecurityregistration.security.validators.PasswordMat
 import com.springboot.springsecurityregistration.security.validators.ValidEmail;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.context.MessageSource;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -14,7 +16,7 @@ import javax.validation.constraints.NotNull;
  */
 @Getter
 @Setter
-@PasswordMatches
+@PasswordMatches(message = "{PasswordMatches.user}")
 public class UserDto {
 
     @NotNull
