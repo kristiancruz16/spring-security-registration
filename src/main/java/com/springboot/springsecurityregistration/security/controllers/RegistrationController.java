@@ -59,7 +59,7 @@ public class RegistrationController {
     @GetMapping("/user/registration")
     public String showRegistrationForm(WebRequest request, Model model) {
         UserDto userDto = new UserDto();
-        model.addAttribute("user", userDto);
+        model.addAttribute("userDto", userDto);
         return "registration";
     }
 
@@ -70,10 +70,7 @@ public class RegistrationController {
 
         if(errors.hasErrors()){
             ModelAndView mav = new ModelAndView("registration");
-            List<ObjectError> listObjectError = errors.getAllErrors();
-            List<String> errorList = new ArrayList<>();
-            listObjectError.stream()
-                    .forEach(e -> errorList.add(e.getDefaultMessage()));
+            List<String> errorList = getErrors(errors);
             mav.addObject("message",errorList);
             return mav;
         }
@@ -194,7 +191,6 @@ public class RegistrationController {
             return new ModelAndView("redirect:/login",model);
         }
 
-        User user = passwordResetToken.getUser();
         Calendar cal = Calendar.getInstance();
         Date expiryDate = passwordResetToken.getExpiryDate();
         long expiryMinutesRemaining = expiryDate.getTime() - cal.getTime().getTime();
@@ -210,20 +206,38 @@ public class RegistrationController {
     }
 
     @PostMapping("/login/changePassword")
-    public ModelAndView processChangePassword(HttpServletRequest request,PasswordDto passwordDto,
-                                              ModelMap model, @RequestParam String token){
+    public ModelAndView processChangePassword(HttpServletRequest request,@Valid PasswordDto passwordDto,
+                                              Errors errors, ModelMap model, @RequestParam String token){
         PasswordResetToken resetToken = userService.getPasswordResetTokenByResetToken(token);
         Locale locale = request.getLocale();
         User user = resetToken.getUser();
+
+        if(errors.hasErrors()){
+            ModelAndView mav = new ModelAndView("changePassword");
+            List<String> errorList = getErrors(errors);
+            mav.addObject("error",errorList);
+            return mav;
+        }
+
         if(!passwordDto.getPassword().equals(passwordDto.getMatchingPassword())) {
             String error = messages.getMessage("PasswordMatches.user",null,locale);
             model.addAttribute("error",error);
             return new ModelAndView("changePassword",model);
         }
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
+        userService.deletePasswordResetToken(resetToken);
         userService.saveRegisteredUser(user);
-        String message = messages.getMessage("message.updatePasswordSuc",null,locale);
+        String message = messages.getMessage("message.resetPasswordSuc",null,locale);
         model.addAttribute("message",message);
         return new ModelAndView("redirect:/login",model);
+    }
+
+
+    private List<String> getErrors(Errors errors) {
+        List<ObjectError> listObjectError = errors.getAllErrors();
+        List<String> errorList = new ArrayList<>();
+        listObjectError.stream()
+                .forEach(e -> errorList.add(e.getDefaultMessage()));
+        return errorList;
     }
 }

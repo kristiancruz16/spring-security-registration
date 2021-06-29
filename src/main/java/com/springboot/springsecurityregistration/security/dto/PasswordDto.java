@@ -1,4 +1,5 @@
 package com.springboot.springsecurityregistration.security.dto;
+import com.springboot.springsecurityregistration.security.validators.ValidPassword;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,7 @@ import javax.validation.constraints.NotNull;
 public class PasswordDto {
     @NotNull
     @NotEmpty
+    @ValidPassword
     private String password;
 
     @NotNull

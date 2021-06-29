@@ -2,11 +2,10 @@ package com.springboot.springsecurityregistration.security.dto;
 
 import com.springboot.springsecurityregistration.security.validators.PasswordMatches;
 import com.springboot.springsecurityregistration.security.validators.ValidEmail;
+import com.springboot.springsecurityregistration.security.validators.ValidPassword;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.context.MessageSource;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -29,6 +28,7 @@ public class UserDto {
 
     @NotNull
     @NotEmpty
+    @ValidPassword
     private String password;
     private String matchingPassword;
 

@@ -120,4 +120,9 @@ public class UserServiceImpl implements UserService {
         tokenRepository.delete(vToken);
     }
 
+    @Override
+    public void deletePasswordResetToken(PasswordResetToken passwordResetToken) {
+        resetTokenRepository.delete(passwordResetToken);
+    }
+
 }
