@@ -6,7 +6,7 @@ import com.springboot.springsecurityregistration.security.domain.VerificationTok
 import com.springboot.springsecurityregistration.security.dto.PasswordDto;
 import com.springboot.springsecurityregistration.security.exceptions.UserAlreadyExistException;
 import com.springboot.springsecurityregistration.security.exceptions.UserNotFoundException;
-import com.springboot.springsecurityregistration.security.registration.OnRegistrationCompleteEvent;
+import com.springboot.springsecurityregistration.security.events.OnRegistrationCompleteEvent;
 import com.springboot.springsecurityregistration.security.services.CreatePasswordResetLink;
 import com.springboot.springsecurityregistration.security.services.UserService;
 import com.springboot.springsecurityregistration.security.dto.UserDto;
@@ -225,6 +225,7 @@ public class RegistrationController {
             return new ModelAndView("changePassword",model);
         }
         user.setPassword(passwordEncoder.encode(passwordDto.getPassword()));
+        //todo if the reset is to unlock the account and password has been successfully changed set the nonlocked property to true
         userService.deletePasswordResetToken(resetToken);
         userService.saveRegisteredUser(user);
         String message = messages.getMessage("message.resetPasswordSuc",null,locale);

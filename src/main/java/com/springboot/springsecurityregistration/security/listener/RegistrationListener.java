@@ -1,10 +1,10 @@
-package com.springboot.springsecurityregistration.security.registration;
+package com.springboot.springsecurityregistration.security.listener;
 
 
 import com.springboot.springsecurityregistration.security.domain.User;
+import com.springboot.springsecurityregistration.security.events.OnRegistrationCompleteEvent;
 import com.springboot.springsecurityregistration.security.services.UserService;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.MessageSource;
 import org.springframework.context.event.EventListener;
 import org.springframework.mail.SimpleMailMessage;

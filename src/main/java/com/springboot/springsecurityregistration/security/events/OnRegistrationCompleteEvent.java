@@ -1,9 +1,7 @@
-package com.springboot.springsecurityregistration.security.registration;
+package com.springboot.springsecurityregistration.security.events;
 
 import com.springboot.springsecurityregistration.security.domain.User;
 import lombok.Getter;
-import lombok.Setter;
-import org.springframework.context.ApplicationEvent;
 
 import java.util.Locale;
 
